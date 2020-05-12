@@ -201,7 +201,10 @@
     </div>
     <div class="clearfix"></div>
     <partial name="_Footer" />
-
     @RenderSection("scripts", false)
+    @if (BlogConfig.GeneralSettings.AutoDarkLightTheme)
+    {
+        <script src="~/js/app/autodarklighttheme.js"></script>
+    }
 </body>
 </html>
