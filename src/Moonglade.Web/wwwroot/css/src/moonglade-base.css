@@ -877,14 +877,6 @@ html, body {
     height: 100%;
 }
 
-::-webkit-scrollbar {
-    width: 5px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #CECECE;
-}
-
 ::selection {
     background-color: rgba(43, 87, 154, .15);
     color: inherit;
