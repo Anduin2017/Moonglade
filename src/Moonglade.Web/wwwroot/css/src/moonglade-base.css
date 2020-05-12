@@ -644,6 +644,11 @@ div.animbrand a:focus, div.animbrand a:hover {
     line-height: 24px;
     word-break: break-all;
     word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
 }
 
 .post-summary-tags {
