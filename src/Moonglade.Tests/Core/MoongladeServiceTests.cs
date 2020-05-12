@@ -1,11 +1,11 @@
-﻿using System;
-using Edi.Practice.RequestResponseModel;
+﻿using Edi.Practice.RequestResponseModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moonglade.Core;
 using Moonglade.Model.Settings;
 using Moq;
 using NUnit.Framework;
+using System;
 
 namespace Moonglade.Tests.Core
 {

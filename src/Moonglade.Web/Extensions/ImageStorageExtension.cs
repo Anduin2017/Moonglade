@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Moonglade.Core;
 using Moonglade.ImageStorage;
 using Moonglade.ImageStorage.AzureBlob;
 using Moonglade.ImageStorage.FileSystem;
+using System;
 
 namespace Moonglade.Web.Extensions
 {

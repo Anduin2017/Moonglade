@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -13,6 +12,7 @@ using Moonglade.Web.Models;
 using Moonglade.Web.SiteIconGenerator;
 using Moq;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace Moonglade.Tests.Web
 {

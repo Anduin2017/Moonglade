@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Dapper;
+﻿using Dapper;
 using Edi.Practice.RequestResponseModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
@@ -10,6 +6,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moonglade.Model;
 using Moonglade.Model.Settings;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Moonglade.Auditing
 {

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Edi.Practice.RequestResponseModel;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Edi.Practice.RequestResponseModel;
 
 namespace Moonglade.Auditing
 {

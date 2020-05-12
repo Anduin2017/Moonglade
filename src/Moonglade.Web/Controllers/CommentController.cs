@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
-using Edi.Captcha;
+﻿using Edi.Captcha;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +11,9 @@ using Moonglade.Core.Notification;
 using Moonglade.Model;
 using Moonglade.Model.Settings;
 using Moonglade.Web.Models;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 using X.PagedList;
 
 namespace Moonglade.Web.Controllers

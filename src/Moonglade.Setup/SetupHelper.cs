@@ -1,9 +1,9 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using Dapper;
+﻿using Dapper;
 using Edi.Practice.RequestResponseModel;
 using Microsoft.Data.SqlClient;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace Moonglade.Setup
 {

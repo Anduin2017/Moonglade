@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Edi.Practice.RequestResponseModel;
+using Microsoft.Extensions.Logging;
+using System;
 using System.IO;
 using System.Threading.Tasks;
-using Edi.Practice.RequestResponseModel;
-using Microsoft.Extensions.Logging;
 
 namespace Moonglade.ImageStorage.FileSystem
 {

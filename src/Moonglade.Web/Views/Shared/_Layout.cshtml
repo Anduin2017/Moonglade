@@ -118,7 +118,7 @@
                             <ul class="dropdown-menu category-menu">
                                 <li>
                                     <a class="dropdown-item" href="/page/about">
-                                        About me
+                                        About Anduin
                                     </a>
                                 </li>
                                 <li>
@@ -129,7 +129,10 @@
                             </ul>
                         </li>
 
-                        @await Component.InvokeAsync("Menu")
+                        @*
+                            Remove Edi's default menu navigation because it does not support drop down.
+                            @await Component.InvokeAsync("Menu")
+                        *@
                     </ul>
                     <form class="form-inline search-form my-2 my-lg-0" asp-controller="Search" asp-action="Index">
                         <input id="term"

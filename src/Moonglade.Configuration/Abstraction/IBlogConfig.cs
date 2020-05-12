@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Edi.Practice.RequestResponseModel;
+﻿using Edi.Practice.RequestResponseModel;
+using System.Threading.Tasks;
 
 namespace Moonglade.Configuration.Abstraction
 {

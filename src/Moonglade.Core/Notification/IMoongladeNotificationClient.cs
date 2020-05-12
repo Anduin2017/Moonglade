@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Edi.Practice.RequestResponseModel;
+﻿using Edi.Practice.RequestResponseModel;
 using Moonglade.Model;
+using System;
+using System.Threading.Tasks;
 
 namespace Moonglade.Core.Notification
 {

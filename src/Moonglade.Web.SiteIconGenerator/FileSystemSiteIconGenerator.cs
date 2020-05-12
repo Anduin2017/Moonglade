@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Moonglade.Web.SiteIconGenerator.IconEncoder;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using Moonglade.Web.SiteIconGenerator.IconEncoder;
 
 namespace Moonglade.Web.SiteIconGenerator
 {

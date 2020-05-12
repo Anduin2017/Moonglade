@@ -1,6 +1,6 @@
-﻿using System;
-using Moonglade.DateTimeOps;
+﻿using Moonglade.DateTimeOps;
 using NUnit.Framework;
+using System;
 
 namespace Moonglade.Tests
 {

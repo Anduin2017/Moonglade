@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Edi.Captcha;
+﻿using Edi.Captcha;
 using Edi.ImageWatermark;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -20,6 +14,12 @@ using Moonglade.Model;
 using Moonglade.Model.Settings;
 using Moonglade.Web.Models;
 using Moonglade.Web.SiteIconGenerator;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Moonglade.Web.Controllers
 {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moonglade.Core;
 using Moonglade.Core.Notification;
@@ -9,6 +7,8 @@ using Moonglade.Data.Infrastructure;
 using Moonglade.Pingback;
 using Moq;
 using NUnit.Framework;
+using System;
+using System.Threading.Tasks;
 
 namespace Moonglade.Tests.Core
 {
