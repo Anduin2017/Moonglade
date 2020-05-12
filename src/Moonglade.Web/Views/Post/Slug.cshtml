@@ -37,9 +37,12 @@
 }
 
 @section scripts {
+    <script src="https://ui.cdn.aiursoft.com/node_modules/jquery-utc-time/dist/jquery-utc-time.min.js"></script>
     <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
     <script src="~/js/highlight.pack.js"></script>
-
+    <script>
+        $(this).initUTCTime({});
+    </script>
     @if (BlogConfig.GeneralSettings.AutoDarkLightTheme)
     {
         <script src="~/js/app/autodarklighttheme.js"></script>
@@ -100,32 +103,18 @@
         </h4>
         <hr class="d-none d-md-block post-header-hr" />
 
-        <div class="d-block d-sm-none">
-            <div class="post-publish-info post-publish-info-mobile bg-light">
-                <time datetime="@Model.PostModel.PubDateUtc.ToString("u")" title="GMT @Model.PostModel.PubDateUtc">@DateTimeResolver.GetDateTimeWithUserTZone(Model.PostModel.PubDateUtc).ToString("MM/dd/yyyy")</time>
-                @if (Model.PostModel.LastModifyOnUtc.HasValue)
-                {
-                    <span>(Edit on @DateTimeResolver.GetDateTimeWithUserTZone(Model.PostModel.LastModifyOnUtc.Value).ToString("MM/dd/yyyy HH:mm"))</span>
-                }
-                | @BlogConfig.GeneralSettings.TimeZoneId
-            </div>
-        </div>
-
-        <div class="d-none d-md-block post-publish-info mb-2">
+        <div class="post-publish-info mb-2">
             <strong class="text-muted">
-                <time datetime="@Model.PostModel.PubDateUtc.ToString("u")" title="GMT @Model.PostModel.PubDateUtc">@DateTimeResolver.GetDateTimeWithUserTZone(Model.PostModel.PubDateUtc).ToString("MM/dd/yyyy")</time>
-                @if (Model.PostModel.LastModifyOnUtc.HasValue)
-                {
-                    <span>(Edit on @DateTimeResolver.GetDateTimeWithUserTZone(Model.PostModel.LastModifyOnUtc.Value).ToString("MM/dd/yyyy HH:mm"))</span>
-                }
-                | @BlogConfig.GeneralSettings.TimeZoneId
+                <time data-utc-time="@Model.PostModel.LastModifyOnUtc.Value">
+                    @DateTimeResolver.GetDateTimeWithUserTZone(Model.PostModel.LastModifyOnUtc.Value).ToString("MM/dd/yyyy HH:mm")
+                </time>
             </strong>
             <span class="badge badge-secondary float-right post-hit-number">@Model.PostModel.Hits Reads</span>
         </div>
 
         <div class="hidden-print">
             <section class="post-cat-tag-info">
-                <div class="float-right d-none d-md-block">
+                <div class="float-right">
                     @if (Model.PostModel.Tags.Count > 0)
                     {
                         <span class="toptags-list toptags-list-sm">
