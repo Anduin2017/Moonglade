@@ -1,13 +1,7 @@
 ﻿#region Usings
 
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using AspNetCoreRateLimit;
 using Edi.Captcha;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -44,6 +38,10 @@ using Moonglade.Web.Middleware.PoweredBy;
 using Moonglade.Web.Middleware.RobotsTxt;
 using Moonglade.Web.SiteIconGenerator;
 using Polly;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 
 #endregion
 
@@ -85,7 +83,6 @@ namespace Moonglade.Web
                 options.Cookie.HttpOnly = true;
             });
 
-            services.AddApplicationInsightsTelemetry();
             services.AddMoongladeAuthenticaton(authentication);
             services.AddMvc(options =>
                             options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
@@ -148,8 +145,7 @@ namespace Moonglade.Web
         public void Configure(
             IApplicationBuilder app,
             ILogger<Startup> logger,
-            IHostApplicationLifetime appLifetime,
-            TelemetryConfiguration configuration)
+            IHostApplicationLifetime appLifetime)
         {
             _logger = logger;
             var enforceHttps = bool.Parse(_appSettingsSection["EnforceHttps"]);
@@ -161,9 +157,6 @@ namespace Moonglade.Web
             if (!_environment.IsProduction())
             {
                 _logger.LogWarning($"Running in environment: {_environment.EnvironmentName}. Application Insights disabled.");
-
-                configuration.DisableTelemetry = true;
-                TelemetryDebugWriter.IsTracingDisabled = true;
             }
 
             appLifetime.ApplicationStarted.Register(() =>

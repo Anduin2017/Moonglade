@@ -1,5 +1,4 @@
-﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment WebHostEnvironment
 
 <!DOCTYPE html>
@@ -42,9 +41,6 @@
     <link href="~/css/mooglade-css-bundle.min.css" rel="stylesheet" asp-append-version="true" />
     <script src="~/js/dist/app-js-bundle.min.js" asp-append-version="true"></script>
     @RenderSection("head", false)
-    <environment include="Production">
-        @Html.Raw(JavaScriptSnippet.FullScript)
-    </environment>
     <link href="~/css/theme/@BlogConfig.GeneralSettings.ThemeFileName" rel="stylesheet" asp-append-version="true" />
 </head>
 <body>
