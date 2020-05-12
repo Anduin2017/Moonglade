@@ -91,6 +91,44 @@
                             </li>
                         }
 
+                        <li id="navbar-dropdown-post" class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown">
+                                <span class="icon-youtube"></span>
+                                <strong>Channels</strong>
+                            </a>
+                            <ul class="dropdown-menu category-menu">
+                                <li>
+                                    <a class="dropdown-item" target="_blank" href="https://www.youtube.com/channel/UCe1nKo3WGGzyTgDqmTdZzlA">
+                                        Youtube
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" target="_blank" href="https://space.bilibili.com/34818804">
+                                        Bilibili
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li id="navbar-dropdown-post" class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown">
+                                <span class="icon-star-full"></span>
+                                <strong>About</strong>
+                            </a>
+                            <ul class="dropdown-menu category-menu">
+                                <li>
+                                    <a class="dropdown-item" href="/page/about">
+                                        About me
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/page/apps">
+                                        Portfolio
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
                         @await Component.InvokeAsync("Menu")
                     </ul>
                     <form class="form-inline search-form my-2 my-lg-0" asp-controller="Search" asp-action="Index">
@@ -128,7 +166,7 @@
                 <div class="blogger-intro-content">
                     <div class="row">
                         <div class="col-3">
-                            <a href="/pages/about">
+                            <a href="/page/about">
                                 <img src="@Url.Action("Avatar", "Assets")"
                                      alt="@BlogConfig.GeneralSettings.OwnerName" class="rounded-circle blogger-head-pic" />
                             </a>
