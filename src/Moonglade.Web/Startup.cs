@@ -192,9 +192,8 @@ namespace Moonglade.Web
                             .Self()
                             .UnsafeInline()
                             .UnsafeEval()
-                            // Whitelist Azure Application Insights
-                            .From("https://*.vo.msecnd.net")
-                            .From("https://*.services.visualstudio.com");
+                            // Whitelist Aiursoft.
+                            .From("https://*.aiursoft.com");
                     }
                 })
                 // Microsoft believes privacy is a fundamental human right
