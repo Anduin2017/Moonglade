@@ -23,6 +23,15 @@
         @Html.Raw(BlogConfig.GeneralSettings.SideBarCustomizedHtmlPitch)
     }
 
+    <section class="cat-list mb-4">
+        <div class="card">
+            <div class="card-header">All Categories</div>
+            <cache expires-after="@TimeSpan.FromMinutes(60)">
+                @await Component.InvokeAsync("CategoryList")
+            </cache>
+        </div>
+    </section>
+
     <section class="top-tags mb-4">
         <div class="card">
             <div class="card-header">Top Tags</div>
@@ -33,15 +42,6 @@
                 <hr />
                 <a asp-controller="Tags" asp-action="Index" class="card-link">All Tags</a>
             </div>
-        </div>
-    </section>
-
-    <section class="cat-list mb-4">
-        <div class="card">
-            <div class="card-header">All Categories</div>
-            <cache expires-after="@TimeSpan.FromMinutes(60)">
-                @await Component.InvokeAsync("CategoryList")
-            </cache>
         </div>
     </section>
 
