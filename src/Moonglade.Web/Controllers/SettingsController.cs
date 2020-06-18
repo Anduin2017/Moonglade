@@ -1,8 +1,10 @@
 ﻿using Edi.Practice.RequestResponseModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -58,6 +60,19 @@ namespace Moonglade.Web.Controllers
             _friendLinkService = friendLinkService;
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult SetLanguage(string culture, string returnUrl)
+        {
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+            );
+
+            return LocalRedirect(returnUrl);
+        }
+
         [HttpGet("general-settings")]
         public IActionResult General()
         {
@@ -78,6 +93,7 @@ namespace Moonglade.Web.Controllers
                 LogoText = _blogConfig.GeneralSettings.LogoText,
                 MetaKeyword = _blogConfig.GeneralSettings.MetaKeyword,
                 MetaDescription = _blogConfig.GeneralSettings.MetaDescription,
+                CanonicalPrefix = _blogConfig.GeneralSettings.CanonicalPrefix,
                 SiteTitle = _blogConfig.GeneralSettings.SiteTitle,
                 Copyright = _blogConfig.GeneralSettings.Copyright,
                 SideBarCustomizedHtmlPitch = _blogConfig.GeneralSettings.SideBarCustomizedHtmlPitch,
@@ -102,6 +118,7 @@ namespace Moonglade.Web.Controllers
             {
                 _blogConfig.GeneralSettings.MetaKeyword = model.MetaKeyword;
                 _blogConfig.GeneralSettings.MetaDescription = model.MetaDescription;
+                _blogConfig.GeneralSettings.CanonicalPrefix = model.CanonicalPrefix;
                 _blogConfig.GeneralSettings.SiteTitle = model.SiteTitle;
                 _blogConfig.GeneralSettings.Copyright = model.Copyright;
                 _blogConfig.GeneralSettings.LogoText = model.LogoText;
@@ -119,7 +136,7 @@ namespace Moonglade.Web.Controllers
                 _blogConfig.RequireRefresh();
 
                 Logger.LogInformation($"User '{User.Identity.Name}' updated GeneralSettings");
-                await _moongladeAudit.AddAuditEntry(EventType.Settings, Auditing.AuditEventId.SettingsSavedGeneral, "General Settings updated.");
+                await _moongladeAudit.AddAuditEntry(EventType.Settings, AuditEventId.SettingsSavedGeneral, "General Settings updated.");
 
                 return Json(response);
             }
@@ -168,7 +185,7 @@ namespace Moonglade.Web.Controllers
                 _blogConfig.RequireRefresh();
 
                 Logger.LogInformation($"User '{User.Identity.Name}' updated ContentSettings");
-                await _moongladeAudit.AddAuditEntry(EventType.Settings, Auditing.AuditEventId.SettingsSavedContent, "Content Settings updated.");
+                await _moongladeAudit.AddAuditEntry(EventType.Settings, AuditEventId.SettingsSavedContent, "Content Settings updated.");
 
                 return Json(response);
 
@@ -209,7 +226,7 @@ namespace Moonglade.Web.Controllers
                 _blogConfig.RequireRefresh();
 
                 Logger.LogInformation($"User '{User.Identity.Name}' updated EmailSettings");
-                await _moongladeAudit.AddAuditEntry(EventType.Settings, Auditing.AuditEventId.SettingsSavedNotification, "Notification Settings updated.");
+                await _moongladeAudit.AddAuditEntry(EventType.Settings, AuditEventId.SettingsSavedNotification, "Notification Settings updated.");
 
                 return Json(response);
             }
@@ -232,16 +249,15 @@ namespace Moonglade.Web.Controllers
 
         #region Feed Settings
 
-        [HttpGet("feed")]
-        public IActionResult Feed()
+        [HttpGet("subscription")]
+        public IActionResult Subscription()
         {
             var settings = _blogConfig.FeedSettings;
-            var vm = new FeedSettingsViewModel
+            var vm = new SubscriptionSettingsViewModel
             {
                 AuthorName = settings.AuthorName,
                 RssCopyright = settings.RssCopyright,
                 RssDescription = settings.RssDescription,
-                RssGeneratorName = settings.RssGeneratorName,
                 RssItemCount = settings.RssItemCount,
                 RssTitle = settings.RssTitle,
                 UseFullContent = settings.UseFullContent
@@ -250,8 +266,8 @@ namespace Moonglade.Web.Controllers
             return View(vm);
         }
 
-        [HttpPost("feed")]
-        public async Task<IActionResult> Feed(FeedSettingsViewModel model)
+        [HttpPost("subscription")]
+        public async Task<IActionResult> Subscription(SubscriptionSettingsViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -259,7 +275,6 @@ namespace Moonglade.Web.Controllers
                 settings.AuthorName = model.AuthorName;
                 settings.RssCopyright = model.RssCopyright;
                 settings.RssDescription = model.RssDescription;
-                settings.RssGeneratorName = model.RssGeneratorName;
                 settings.RssItemCount = model.RssItemCount;
                 settings.RssTitle = model.RssTitle;
                 settings.UseFullContent = model.UseFullContent;
@@ -268,7 +283,7 @@ namespace Moonglade.Web.Controllers
                 _blogConfig.RequireRefresh();
 
                 Logger.LogInformation($"User '{User.Identity.Name}' updated FeedSettings");
-                await _moongladeAudit.AddAuditEntry(EventType.Settings, Auditing.AuditEventId.SettingsSavedSubscription, "Subscription Settings updated.");
+                await _moongladeAudit.AddAuditEntry(EventType.Settings, AuditEventId.SettingsSavedSubscription, "Subscription Settings updated.");
 
                 return Json(response);
             }
@@ -309,7 +324,7 @@ namespace Moonglade.Web.Controllers
                 _blogConfig.RequireRefresh();
 
                 Logger.LogInformation($"User '{User.Identity.Name}' updated WatermarkSettings");
-                await _moongladeAudit.AddAuditEntry(EventType.Settings, Auditing.AuditEventId.SettingsSavedWatermark, "Watermark Settings updated.");
+                await _moongladeAudit.AddAuditEntry(EventType.Settings, AuditEventId.SettingsSavedWatermark, "Watermark Settings updated.");
 
                 return Json(response);
             }
@@ -323,7 +338,7 @@ namespace Moonglade.Web.Controllers
         [HttpGet("friendlink")]
         public async Task<IActionResult> FriendLink()
         {
-            var response = await _friendLinkService.GetAllFriendLinksAsync();
+            var response = await _friendLinkService.GetAllAsync();
             if (response.IsSuccess)
             {
                 var vm = new FriendLinkSettingsViewModelWrap
@@ -386,7 +401,7 @@ namespace Moonglade.Web.Controllers
         {
             try
             {
-                var response = await _friendLinkService.GetFriendLinkAsync(id);
+                var response = await _friendLinkService.GetAsync(id);
                 if (response.IsSuccess)
                 {
                     var obj = new FriendLinkEditViewModel
@@ -474,7 +489,7 @@ namespace Moonglade.Web.Controllers
                 _blogConfig.RequireRefresh();
 
                 Logger.LogInformation($"User '{User.Identity.Name}' updated avatar.");
-                await _moongladeAudit.AddAuditEntry(EventType.Settings, Auditing.AuditEventId.SettingsSavedGeneral, "Avatar updated.");
+                await _moongladeAudit.AddAuditEntry(EventType.Settings, AuditEventId.SettingsSavedGeneral, "Avatar updated.");
 
                 return Json(response);
             }
@@ -525,7 +540,7 @@ namespace Moonglade.Web.Controllers
                 }
 
                 Logger.LogInformation($"User '{User.Identity.Name}' updated site icon.");
-                await _moongladeAudit.AddAuditEntry(EventType.Settings, Auditing.AuditEventId.SettingsSavedGeneral, "Site icon updated.");
+                await _moongladeAudit.AddAuditEntry(EventType.Settings, AuditEventId.SettingsSavedGeneral, "Site icon updated.");
 
                 return Json(response);
             }
@@ -548,8 +563,8 @@ namespace Moonglade.Web.Controllers
             {
                 DNSPrefetchEndpoint = settings.DNSPrefetchEndpoint,
                 RobotsTxtContent = settings.RobotsTxtContent,
-                EnablePingBackSend = settings.EnablePingBackSend,
-                EnablePingBackReceive = settings.EnablePingBackReceive
+                EnablePingbackSend = settings.EnablePingBackSend,
+                EnablePingbackReceive = settings.EnablePingBackReceive
             };
 
             return View(vm);
@@ -563,13 +578,13 @@ namespace Moonglade.Web.Controllers
                 var settings = _blogConfig.AdvancedSettings;
                 settings.DNSPrefetchEndpoint = model.DNSPrefetchEndpoint;
                 settings.RobotsTxtContent = model.RobotsTxtContent;
-                settings.EnablePingBackSend = model.EnablePingBackSend;
-                settings.EnablePingBackReceive = model.EnablePingBackReceive;
+                settings.EnablePingBackSend = model.EnablePingbackSend;
+                settings.EnablePingBackReceive = model.EnablePingbackReceive;
 
                 var response = await _blogConfig.SaveConfigurationAsync(settings);
                 _blogConfig.RequireRefresh();
 
-                await _moongladeAudit.AddAuditEntry(EventType.Settings, Auditing.AuditEventId.SettingsSavedAdvanced, "Advanced Settings updated.");
+                await _moongladeAudit.AddAuditEntry(EventType.Settings, AuditEventId.SettingsSavedAdvanced, "Advanced Settings updated.");
                 return Json(response);
             }
             return Json(new FailedResponse((int)ResponseFailureCode.InvalidModelState, "Invalid ModelState"));
@@ -594,7 +609,7 @@ namespace Moonglade.Web.Controllers
 
             if (!response.IsSuccess) return ServerError(response.Message);
 
-            await _moongladeAudit.AddAuditEntry(EventType.Settings, Auditing.AuditEventId.SettingsSavedAdvanced, "System reset.");
+            await _moongladeAudit.AddAuditEntry(EventType.Settings, AuditEventId.SettingsSavedAdvanced, "System reset.");
 
             applicationLifetime.StopApplication();
             return Ok();
@@ -622,7 +637,6 @@ namespace Moonglade.Web.Controllers
 
                 var skip = (page - 1) * 20;
 
-                // TODO: Add filtering
                 var response = await _moongladeAudit.GetAuditEntries(skip, 20);
                 if (response.IsSuccess)
                 {
@@ -679,7 +693,6 @@ namespace Moonglade.Web.Controllers
             return View();
         }
 
-        [Authorize]
         [HttpGet("export/{type}")]
         public async Task<IActionResult> Export4Download([FromServices] IExportManager expman, ExportDataType type)
         {
@@ -701,5 +714,67 @@ namespace Moonglade.Web.Controllers
         }
 
         #endregion
+
+        [HttpPost("clear-data-cache")]
+        public IActionResult ClearDataCache(string[] cachedObjectValues, [FromServices] IMemoryCache cache)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (cachedObjectValues.Contains("MCO_IMEM"))
+                    {
+                        cache.Remove(StaticCacheKeys.Avatar);
+                        cache.Remove(StaticCacheKeys.PostCount);
+
+                        // Per this thread, it is not possible to get all cache keys in ASP.NET Core in order to clear them
+                        // https://stackoverflow.com/questions/45597057/how-to-retrieve-a-list-of-memory-cache-keys-in-asp-net-core
+                    }
+
+                    if (cachedObjectValues.Contains("MCO_OPML"))
+                    {
+                        var opmlDataFile = Path.Join($"{SiteDataDirectory}", $"{Constants.OpmlFileName}");
+                        if (System.IO.File.Exists(opmlDataFile))
+                        {
+                            System.IO.File.Delete(opmlDataFile);
+                        }
+                    }
+
+                    if (cachedObjectValues.Contains("MCO_FEED"))
+                    {
+                        var feedDir = Path.Join($"{SiteDataDirectory}", "feed");
+                        if (Directory.Exists(feedDir))
+                        {
+                            Directory.Delete(feedDir);
+                        }
+                    }
+
+                    if (cachedObjectValues.Contains("MCO_OPSH"))
+                    {
+                        var openSearchDataFile = Path.Join($"{SiteDataDirectory}", $"{Constants.OpenSearchFileName}");
+                        if (System.IO.File.Exists(openSearchDataFile))
+                        {
+                            System.IO.File.Delete(openSearchDataFile);
+                        }
+                    }
+
+                    if (cachedObjectValues.Contains("MCO_SICO"))
+                    {
+                        if (Directory.Exists(SiteIconDirectory))
+                        {
+                            Directory.Delete(SiteIconDirectory);
+                        }
+                    }
+
+                    return Ok();
+                }
+
+                return Conflict(ModelState);
+            }
+            catch (Exception e)
+            {
+                return ServerError(e.Message);
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@
     Layout = "_LayoutAdmin";
 }
 
-@model IReadOnlyList<Moonglade.Model.PostMetaData>
+@model IReadOnlyList<Moonglade.Model.PostSegment>
 
 @section head{
     <link href="~/css/datatables.min.css" rel="stylesheet" />
@@ -44,9 +44,9 @@
     <table id="posts-table" class="table table-bordered">
         <thead>
             <tr>
-                <th>Title</th>
-                <th class="table-item-w20">Created</th>
-                <th class="table-item-w20">Options</th>
+                <th>@Localizer["Title"]</th>
+                <th class="table-item-w20">@Localizer["Created"]</th>
+                <th class="table-item-w20">@Localizer["Options"]</th>
             </tr>
         </thead>
         <tbody>

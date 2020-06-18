@@ -2,15 +2,9 @@
 
 [![Build Status](https://dev.azure.com/ediwang/Edi-GitHub/_apis/build/status/EdiWang.Moonglade?branchName=master)](https://dev.azure.com/ediwang/Edi-GitHub/_build/latest?definitionId=68&branchName=master)
 
-The [**.NET Core**](https://dotnet.microsoft.com/) blog system of [**edi.wang**](https://edi.wang) that runs on [**Microsoft Azure**](https://azure.microsoft.com/en-us/)
+The [**.NET Core**](https://dotnet.microsoft.com/) blog system of [**edi.wang**](https://edi.wang) that runs on [**Microsoft Azure**](https://azure.microsoft.com/en-us/). Enable most common blogging features including Posts, Comments, Categories, Archive, Tags, Pages and Friendlink.
 
-![image](https://blog.ediwangcdn.com/web-assets/ediwang-azure-arch-v2.png)
-
-## 🎉 Features
-
-**Basic:** Post, Comment, Category, Archive, Tag, Page, Friendlink
-
-**Misc:** Pingback, RSS/Atom/OPML, Open Search, Reader View
+![image](https://blog.ediwangcdn.com/web-assets/ediwang-azure-arch-v3.png)
 
 ## 🛠 Build and Run
 
@@ -26,7 +20,7 @@ Tools | Alternative
 
 Development | Production 
 --- | ---
-Create an [SQL Server 2019 LocalDB](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb?WT.mc_id=AZ-MVP-5002809&view=sql-server-ver15) database. e.g. ```moonglade-dev``` | [Create an Azure SQL Database](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-single-database-get-started?WT.mc_id=AZ-MVP-5002809) or a SQL Server 2019 database. e.g. ```moonglade-production```
+Create an [SQL Server 2019 LocalDB](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb?WT.mc_id=AZ-MVP-5002809&view=sql-server-ver15) database. e.g. ```moonglade``` | [Create an Azure SQL Database](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-single-database-get-started?WT.mc_id=AZ-MVP-5002809) or a SQL Server 2019 database. e.g. ```moonglade-production```
 Update the ```MoongladeDatabase``` as your database connection string in **appsettings.Development.json** | Set environment variable: ```ConnectionStrings__MoongladeDatabase``` as your connection string. 
 
 ##### Connection String Example
@@ -148,7 +142,25 @@ AllowScriptsInCustomPage | ```bool``` | Allow JavaScript in Page content or not
 EnableAudit | ```bool``` | Enable Audit Log or not
 EnablePostRawEndpoint | ```bool``` | Enable ```/meta``` and ```/content``` endpoint for post URL
 
-### 🐵 Customers
+
+## 🎉 Blog Protocols or Standards
+
+Name | Support | Remark
+--- | --- | ---
+RSS | Yes
+Atom | Yes
+OPML | Yes
+APML | No | Not planned
+FOAF | No | Under triage
+BlogML | No | Under triage
+Open Search | Yes
+Pingback | Yes
+Trackback | No | Not planned
+RSD | No | Not planned
+MetaWeblog | No | Not planned
+Reader View | Yes
+
+## 🐵 Customers
 
 There are a few individuals already setup thier blogs using Moonglade on Azure (Global or China), Alibaba Cloud, Tencent Cloud, etc.
 

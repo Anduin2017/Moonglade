@@ -18,30 +18,32 @@ namespace Moonglade.Web.Controllers
     [Route("page")]
     public class CustomPageController : MoongladeController
     {
+        private readonly IMemoryCache _cache;
         private readonly CustomPageService _customPageService;
+        private static string[] InvalidPageRouteNames => new[] { "index", "manage" };
 
         public CustomPageController(
             ILogger<CustomPageController> logger,
             IOptions<AppSettings> settings,
+            IMemoryCache cache,
             CustomPageService customPageService) : base(logger, settings)
         {
+            _cache = cache;
             _customPageService = customPageService;
         }
 
-        public string[] InvalidPageRouteNames => new[] { "index", "manage", "createoredit", "create", "edit" };
-
-        [HttpGet("{routeName:regex(^(?!-)([[a-zA-Z0-9-]]+)$)}")]
-        public async Task<IActionResult> Index(string routeName, [FromServices] IMemoryCache cache)
+        [HttpGet("{slug:regex(^(?!-)([[a-zA-Z0-9-]]+)$)}")]
+        public async Task<IActionResult> Index(string slug)
         {
-            if (string.IsNullOrWhiteSpace(routeName))
+            if (string.IsNullOrWhiteSpace(slug))
             {
                 return BadRequest();
             }
 
-            var cacheKey = $"page-{routeName.ToLower()}";
-            var pageResponse = await cache.GetOrCreateAsync(cacheKey, async entry =>
+            var cacheKey = $"page-{slug.ToLower()}";
+            var pageResponse = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
-                var response = await _customPageService.GetPageAsync(routeName);
+                var response = await _customPageService.GetAsync(slug);
                 return response;
             });
 
@@ -49,7 +51,12 @@ namespace Moonglade.Web.Controllers
             {
                 if (pageResponse.Item == null)
                 {
-                    Logger.LogWarning($"Custom page not found. {nameof(routeName)}: '{routeName}'");
+                    Logger.LogWarning($"Page not found. {nameof(slug)}: '{slug}'");
+                    return NotFound();
+                }
+
+                if (!pageResponse.Item.IsPublished)
+                {
                     return NotFound();
                 }
 
@@ -59,10 +66,28 @@ namespace Moonglade.Web.Controllers
         }
 
         [Authorize]
+        [Route("preview/{pageId}")]
+        public async Task<IActionResult> Preview(Guid pageId)
+        {
+            var response = await _customPageService.GetAsync(pageId);
+            if (!response.IsSuccess) return ServerError(response.Message);
+
+            var page = response.Item;
+            if (page == null)
+            {
+                Logger.LogWarning($"Page not found, parameter '{pageId}'.");
+                return NotFound();
+            }
+
+            ViewBag.IsDraftPreview = true;
+            return View("Index", page);
+        }
+
+        [Authorize]
         [HttpGet("manage")]
         public async Task<IActionResult> Manage()
         {
-            var response = await _customPageService.GetPagesMetaAsync();
+            var response = await _customPageService.ListSegmentAsync();
             return response.IsSuccess ? View(response.Item) : ServerError();
         }
 
@@ -78,7 +103,7 @@ namespace Moonglade.Web.Controllers
         [HttpGet("manage/edit/{id:guid}")]
         public async Task<IActionResult> Edit(Guid id)
         {
-            var response = await _customPageService.GetPageAsync(id);
+            var response = await _customPageService.GetAsync(id);
             if (response.IsSuccess)
             {
                 if (response.Item == null)
@@ -90,10 +115,12 @@ namespace Moonglade.Web.Controllers
                 {
                     Id = response.Item.Id,
                     Title = response.Item.Title,
-                    RouteName = response.Item.RouteName,
+                    Slug = response.Item.Slug,
+                    MetaDescription = response.Item.MetaDescription,
                     CssContent = response.Item.CssContent,
                     RawHtmlContent = response.Item.RawHtmlContent,
-                    HideSidebar = response.Item.HideSidebar
+                    HideSidebar = response.Item.HideSidebar,
+                    IsPublished = response.Item.IsPublished
                 };
 
                 return View("CreateOrEdit", model);
@@ -109,9 +136,9 @@ namespace Moonglade.Web.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    if (InvalidPageRouteNames.Contains(model.RouteName.ToLower()))
+                    if (InvalidPageRouteNames.Contains(model.Slug.ToLower()))
                     {
-                        ModelState.AddModelError(nameof(model.RouteName), "Reserved Route Name.");
+                        ModelState.AddModelError(nameof(model.Slug), "Reserved Slug.");
                         return View("CreateOrEdit", model);
                     }
 
@@ -120,19 +147,21 @@ namespace Moonglade.Web.Controllers
                         HtmlContent = model.RawHtmlContent,
                         CssContent = model.CssContent,
                         HideSidebar = model.HideSidebar,
-                        RouteName = model.RouteName,
-                        Title = model.Title
+                        Slug = model.Slug,
+                        MetaDescription = model.MetaDescription,
+                        Title = model.Title,
+                        IsPublished = model.IsPublished
                     };
 
                     var response = model.Id == Guid.Empty ?
-                        await _customPageService.CreatePageAsync(req) :
-                        await _customPageService.EditPageAsync(req);
+                        await _customPageService.CreateAsync(req) :
+                        await _customPageService.UpdateAsync(req);
 
                     if (response.IsSuccess)
                     {
                         Logger.LogInformation($"User '{User.Identity.Name}' updated custom page id '{response.Item}'");
 
-                        var cacheKey = $"page-{req.RouteName.ToLower()}";
+                        var cacheKey = $"page-{req.Slug.ToLower()}";
                         cache.Remove(cacheKey);
 
                         return Json(new { PageId = response.Item });
@@ -155,15 +184,15 @@ namespace Moonglade.Web.Controllers
 
         [Authorize]
         [HttpPost("manage/delete")]
-        public async Task<IActionResult> Delete(Guid pageId, string routeName, [FromServices] IMemoryCache cache)
+        public async Task<IActionResult> Delete(Guid pageId, string slug)
         {
             try
             {
-                var response = await _customPageService.DeletePageAsync(pageId);
+                var response = await _customPageService.DeleteAsync(pageId);
                 if (response.IsSuccess)
                 {
-                    var cacheKey = $"page-{routeName.ToLower()}";
-                    cache.Remove(cacheKey);
+                    var cacheKey = $"page-{slug.ToLower()}";
+                    _cache.Remove(cacheKey);
 
                     return Json(pageId);
                 }

@@ -18,7 +18,7 @@
     <div class="row">
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header">Comments</div>
+                <div class="card-header">@Localizer["Comments"]</div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <label asp-for="EnableComments" class="control-label"></label>
@@ -58,13 +58,14 @@
                         <label asp-for="DisharmonyWords" class="control-label"></label>
                         <textarea asp-for="DisharmonyWords" class="form-control h-300px"></textarea>
                         <span asp-validation-for="DisharmonyWords" class="text-danger"></span>
+                        <small class="form-text text-muted">@Localizer["Blocked words will be masked as *** in comment content."]</small>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card mb-3">
-                <div class="card-header">Blog posts</div>
+                <div class="card-header">@Localizer["Blog posts"]</div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <label asp-for="UseFriendlyNotFoundImage" class="control-label"></label>
@@ -102,11 +103,12 @@
                         <label asp-for="PostFooterHtmlPitch" class="control-label"></label>
                         <textarea asp-for="PostFooterHtmlPitch" class="form-control" style="font-size: 12px; font-family: 'Consolas'" spellcheck="false"></textarea>
                         <span asp-validation-for="PostFooterHtmlPitch" class="text-danger"></span>
+                        <small class="form-text text-muted">@Localizer["e.g. Your blog post license information."]</small>
                     </div>
                 </div>
             </div>
             <div class="card">
-                <div class="card-header">Call-out</div>
+                <div class="card-header">@Localizer["Call-out"]</div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <label asp-for="ShowCalloutSection" class="control-label"></label>
@@ -122,6 +124,7 @@
                         <label asp-for="CalloutSectionHtmlPitch" class="control-label"></label>
                         <textarea asp-for="CalloutSectionHtmlPitch" class="form-control" style="font-size: 12px; font-family: 'Consolas'" spellcheck="false"></textarea>
                         <span asp-validation-for="CalloutSectionHtmlPitch" class="text-danger"></span>
+                        <small class="form-text text-muted">@Localizer["The call-out section will display on top of every page in the website."]</small>
                     </div>
                 </div>
             </div>
@@ -130,6 +133,6 @@
 
     <hr />
     <div class="form-group">
-        <input id="btn-save-settings" type="submit" value="Save" class="btn btn-success" />
+        <input id="btn-save-settings" type="submit" value="@Localizer["Save"]" class="btn btn-success" />
     </div>
 </form>

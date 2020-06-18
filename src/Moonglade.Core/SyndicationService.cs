@@ -5,7 +5,6 @@ using Moonglade.Configuration.Abstraction;
 using Moonglade.Data.Entities;
 using Moonglade.Data.Infrastructure;
 using Moonglade.Data.Spec;
-using Moonglade.HtmlEncoding;
 using Moonglade.Model;
 using Moonglade.Model.Settings;
 using Moonglade.Syndication;
@@ -24,7 +23,6 @@ namespace Moonglade.Core
         private readonly IBlogConfig _blogConfig;
         private readonly IRepository<CategoryEntity> _categoryRepository;
         private readonly IRepository<PostEntity> _postRepository;
-        private readonly IHtmlCodec _htmlCodec;
 
         public SyndicationService(
             ILogger<SyndicationService> logger,
@@ -32,13 +30,11 @@ namespace Moonglade.Core
             IBlogConfig blogConfig,
             IHttpContextAccessor httpContextAccessor,
             IRepository<CategoryEntity> categoryRepository,
-            IRepository<PostEntity> postRepository,
-            IHtmlCodec htmlCodec) : base(logger, settings)
+            IRepository<PostEntity> postRepository) : base(logger, settings)
         {
             _blogConfig = blogConfig;
             _categoryRepository = categoryRepository;
             _postRepository = postRepository;
-            _htmlCodec = htmlCodec;
 
             var acc = httpContextAccessor;
             _baseUrl = $"{acc.HttpContext.Request.Scheme}://{acc.HttpContext.Request.Host}";
@@ -59,7 +55,7 @@ namespace Moonglade.Core
                     HeadTitle = _blogConfig.FeedSettings.RssTitle,
                     HeadDescription = _blogConfig.FeedSettings.RssDescription,
                     Copyright = _blogConfig.FeedSettings.RssCopyright,
-                    Generator = _blogConfig.FeedSettings.RssGeneratorName,
+                    Generator = $"Moonglade v{Utils.AppVersion}",
                     FeedItemCollection = itemCollection,
                     TrackBackUrl = _baseUrl,
                     MaxContentLength = 0
@@ -72,7 +68,7 @@ namespace Moonglade.Core
             }
         }
 
-        public async Task RefreshFeedFileForPostAsync(bool isAtom)
+        public async Task RefreshFeedFileAsync(bool isAtom)
         {
             Logger.LogInformation("Start refreshing feed for posts.");
             var itemCollection = await GetPostsAsFeedItemsAsync();
@@ -83,7 +79,7 @@ namespace Moonglade.Core
                 HeadTitle = _blogConfig.FeedSettings.RssTitle,
                 HeadDescription = _blogConfig.FeedSettings.RssDescription,
                 Copyright = _blogConfig.FeedSettings.RssCopyright,
-                Generator = _blogConfig.FeedSettings.RssGeneratorName,
+                Generator = $"Moonglade v{Utils.AppVersion}",
                 FeedItemCollection = itemCollection,
                 TrackBackUrl = _baseUrl,
                 MaxContentLength = 0
@@ -144,19 +140,9 @@ namespace Moonglade.Core
 
         private string GetPostContent(string rawContent)
         {
-            var editor = AppSettings.Editor;
-            switch (editor)
-            {
-                case EditorChoice.HTML:
-                    var html = _htmlCodec.HtmlDecode(rawContent);
-                    return html;
-                case EditorChoice.Markdown:
-                    var md2Html = Utils.ConvertMarkdownContent(rawContent, Utils.MarkdownConvertType.Html, false);
-                    return md2Html;
-                case EditorChoice.None:
-                default:
-                    return rawContent;
-            }
+            return AppSettings.Editor == EditorChoice.Markdown ? 
+                Utils.ConvertMarkdownContent(rawContent, Utils.MarkdownConvertType.Html, false) : 
+                rawContent;
         }
     }
 }

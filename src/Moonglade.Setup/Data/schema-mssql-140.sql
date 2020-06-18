@@ -87,7 +87,6 @@ CREATE TABLE [PostPublish](
 [IsDeleted] [bit] NOT NULL,
 [PubDateUtc] [datetime] NULL,
 [Revision] [int] NULL,
-[PublisherIp] [nvarchar](64) NULL,
 [ContentLanguageCode] [nvarchar](8) NULL)
 
 IF NOT EXISTS(SELECT TOP 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'PostTag')
@@ -111,7 +110,8 @@ IF NOT EXISTS(SELECT TOP 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N
 CREATE TABLE [CustomPage](
 	[Id] UNIQUEIDENTIFIER PRIMARY KEY NOT NULL,
 	[Title] NVARCHAR(128) NULL,
-	[RouteName] NVARCHAR(128) NULL,
+	[Slug] NVARCHAR(128) NULL,
+	[MetaDescription] NVARCHAR(256) NULL,
 	[HtmlContent] NVARCHAR(MAX) NULL,
 	[CssContent] NVARCHAR(MAX) NULL,
 	[HideSidebar] BIT NOT NULL,

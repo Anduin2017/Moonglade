@@ -10,6 +10,7 @@ using Moonglade.DateTimeOps;
 using Moonglade.Model;
 using Moonglade.Model.Settings;
 using Moonglade.Pingback.Mvc;
+using Moonglade.Web.Filters;
 using Moonglade.Web.Models;
 using System;
 using System.Threading.Tasks;
@@ -71,7 +72,7 @@ namespace Moonglade.Web.Controllers
                 return NotFound();
             }
 
-            var rsp = await _postService.GetPostAsync(year, month, day, slug);
+            var rsp = await _postService.GetAsync(year, month, day, slug);
             if (!rsp.IsSuccess) return ServerError(rsp.Message);
 
             var post = rsp.Item;
@@ -104,15 +105,15 @@ namespace Moonglade.Web.Controllers
             switch (raw.ToLower())
             {
                 case "meta":
-                    var rspMeta = await _postService.GetMetaAsync(year, month, day, slug);
-                    return !rspMeta.IsSuccess 
-                        ? ServerError(rspMeta.Message) 
+                    var rspMeta = await _postService.GetSegmentAsync(year, month, day, slug);
+                    return !rspMeta.IsSuccess
+                        ? ServerError(rspMeta.Message)
                         : Json(rspMeta.Item);
 
                 case "content":
                     var rspContent = await _postService.GetRawContentAsync(year, month, day, slug);
-                    return !rspContent.IsSuccess 
-                        ? ServerError(rspContent.Message) 
+                    return !rspContent.IsSuccess
+                        ? ServerError(rspContent.Message)
                         : Content(rspContent.Item, "text/plain");
             }
 
@@ -121,7 +122,7 @@ namespace Moonglade.Web.Controllers
 
         [Authorize]
         [Route("preview/{postId}")]
-        public async Task<IActionResult> DraftPreview(Guid postId)
+        public async Task<IActionResult> Preview(Guid postId)
         {
             var rsp = await _postService.GetDraftPreviewAsync(postId);
             if (!rsp.IsSuccess) return ServerError(rsp.Message);
@@ -141,6 +142,7 @@ namespace Moonglade.Web.Controllers
         }
 
         [HttpPost("hit")]
+        [DisallowSpiderUA]
         public async Task<IActionResult> Hit([FromForm] Guid postId)
         {
             if (DNT)
@@ -164,6 +166,7 @@ namespace Moonglade.Web.Controllers
         }
 
         [HttpPost("like")]
+        [DisallowSpiderUA]
         public async Task<IActionResult> Like([FromForm] Guid postId)
         {
             if (DNT)

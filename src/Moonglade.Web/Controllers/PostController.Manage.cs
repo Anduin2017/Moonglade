@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moonglade.Data.Spec;
-using Moonglade.HtmlEncoding;
 using Moonglade.Model;
 using Moonglade.Pingback;
 using Moonglade.Web.Filters;
@@ -24,7 +23,7 @@ namespace Moonglade.Web.Controllers
         [Route("manage")]
         public async Task<IActionResult> Manage()
         {
-            var list = await _postService.GetMetaListAsync(PostPublishStatus.Published);
+            var list = await _postService.ListSegmentAsync(PostPublishStatus.Published);
             return View(list);
         }
 
@@ -32,7 +31,7 @@ namespace Moonglade.Web.Controllers
         [Route("manage/draft")]
         public async Task<IActionResult> Draft()
         {
-            var list = await _postService.GetMetaListAsync(PostPublishStatus.Draft);
+            var list = await _postService.ListSegmentAsync(PostPublishStatus.Draft);
             return View(list);
         }
 
@@ -40,7 +39,7 @@ namespace Moonglade.Web.Controllers
         [Route("manage/recycle-bin")]
         public async Task<IActionResult> RecycleBin()
         {
-            var list = await _postService.GetMetaListAsync(PostPublishStatus.Deleted);
+            var list = await _postService.ListSegmentAsync(PostPublishStatus.Deleted);
             return View(list);
         }
 
@@ -54,9 +53,9 @@ namespace Moonglade.Web.Controllers
 
         [Authorize]
         [Route("manage/edit/{id:guid}")]
-        public async Task<IActionResult> Edit(Guid id, [FromServices] IHtmlCodec htmlCodec)
+        public async Task<IActionResult> Edit(Guid id)
         {
-            var postResponse = await _postService.GetPostAsync(id);
+            var postResponse = await _postService.GetAsync(id);
             if (!postResponse.IsSuccess)
             {
                 return ServerError();
@@ -69,9 +68,7 @@ namespace Moonglade.Web.Controllers
                 {
                     PostId = post.Id,
                     IsPublished = post.IsPublished,
-                    EditorContent = AppSettings.Editor == Model.Settings.EditorChoice.Markdown ?
-                                                        post.RawPostContent :
-                                                        htmlCodec.HtmlDecode(post.RawPostContent),
+                    EditorContent = post.RawPostContent,
                     Slug = post.Slug,
                     Title = post.Title,
                     EnableComment = post.CommentEnabled,
@@ -92,10 +89,10 @@ namespace Moonglade.Web.Controllers
                 tagStr = tagStr.TrimEnd(',');
                 editViewModel.Tags = tagStr;
 
-                var catResponse = await _categoryService.GetAllCategoriesAsync();
+                var catResponse = await _categoryService.GetAllAsync();
                 if (!catResponse.IsSuccess)
                 {
-                    return ServerError("Unsuccessful response from _categoryService.GetAllCategoriesAsync().");
+                    return ServerError("Unsuccessful response from _categoryService.GetAllAsync().");
                 }
 
                 var catList = catResponse.Item;
@@ -142,8 +139,7 @@ namespace Moonglade.Web.Controllers
                         ContentLanguageCode = model.ContentLanguageCode,
                         IsPublished = model.IsPublished,
                         Tags = tagList,
-                        CategoryIds = model.SelectedCategoryIds,
-                        RequestIp = HttpContext.Connection.RemoteIpAddress.ToString()
+                        CategoryIds = model.SelectedCategoryIds
                     };
 
                     var tzDate = _dateTimeResolver.GetNowWithUserTZone();
@@ -156,8 +152,8 @@ namespace Moonglade.Web.Controllers
                     }
 
                     var response = model.PostId == Guid.Empty ?
-                        await _postService.CreateNewPost(request) :
-                        await _postService.EditPost(request);
+                        await _postService.CreateAsync(request) :
+                        await _postService.UpdateAsync(request);
 
                     if (response.IsSuccess)
                     {
@@ -198,7 +194,7 @@ namespace Moonglade.Web.Controllers
         [HttpPost("manage/restore")]
         public async Task<IActionResult> Restore(Guid postId)
         {
-            var response = await _postService.RestoreDeletedPostAsync(postId);
+            var response = await _postService.RestoreDeletedAsync(postId);
             return response.IsSuccess ? Json(postId) : ServerError();
         }
 
@@ -227,7 +223,7 @@ namespace Moonglade.Web.Controllers
         [HttpGet("manage/empty-recycle-bin")]
         public async Task<IActionResult> EmptyRecycleBin()
         {
-            await _postService.DeleteRecycledPostsAsync();
+            await _postService.DeleteRecycledAsync();
             return RedirectToAction("RecycleBin");
         }
 
@@ -262,7 +258,7 @@ namespace Moonglade.Web.Controllers
                 FeedIncluded = true
             };
 
-            var catList = await _categoryService.GetAllCategoriesAsync();
+            var catList = await _categoryService.GetAllAsync();
             if (null != catList.Item && catList.Item.Any())
             {
                 var cbCatList = catList.Item.Select(p =>

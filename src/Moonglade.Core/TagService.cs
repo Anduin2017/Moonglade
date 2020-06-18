@@ -1,4 +1,6 @@
-﻿using Edi.Practice.RequestResponseModel;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Edi.Practice.RequestResponseModel;
 using Microsoft.Extensions.Logging;
 using Moonglade.Auditing;
 using Moonglade.Data.Entities;
@@ -27,7 +29,7 @@ namespace Moonglade.Core
             _moongladeAudit = moongladeAudit;
         }
 
-        public Task<Response<IReadOnlyList<Tag>>> GetAllTagsAsync()
+        public Task<Response<IReadOnlyList<Tag>>> GetAllAsync()
         {
             return TryExecuteAsync<IReadOnlyList<Tag>>(async () =>
             {
@@ -42,7 +44,7 @@ namespace Moonglade.Core
             });
         }
 
-        public Task<Response<IReadOnlyList<string>>> GetAllTagNamesAsync()
+        public Task<Response<IReadOnlyList<string>>> GetAllNamesAsync()
         {
             return TryExecuteAsync<IReadOnlyList<string>>(async () =>
             {
@@ -51,7 +53,7 @@ namespace Moonglade.Core
             });
         }
 
-        public Task<Response> UpdateTagAsync(int tagId, string newName)
+        public Task<Response> UpdateAsync(int tagId, string newName)
         {
             return TryExecuteAsync(async () =>
             {
@@ -108,7 +110,7 @@ namespace Moonglade.Core
             }, keyParameter: top);
         }
 
-        public Response<Tag> GetTag(string normalizedName)
+        public Response<Tag> Get(string normalizedName)
         {
             return TryExecute(() =>
             {

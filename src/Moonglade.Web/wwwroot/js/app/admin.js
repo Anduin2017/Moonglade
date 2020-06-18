@@ -349,6 +349,37 @@ var onUpdateSettingsFailed = function (context) {
     }
 };
 
+var btnClearCache = '.btn-clearcache';
+var onClearCacheBegin = function () {
+    $(btnClearCache).text('Processing...');
+    $(btnClearCache).addClass('disabled');
+    $(btnClearCache).attr('disabled', 'disabled');
+};
+
+var onClearCacheComplete = function () {
+    $(btnClearCache).text('Clear');
+    $(btnClearCache).removeClass('disabled');
+    $(btnClearCache).removeAttr('disabled');
+};
+
+var onClearCacheSuccess = function (context) {
+    $('#cacheModal').modal('hide');
+    if (window.toastr) {
+        window.toastr.success('Cleared Cache');
+    } else {
+        alert('Cleared Cache');
+    }
+};
+
+var onClearCacheFailed = function (context) {
+    var msg = context.responseJSON.message;
+    if (window.toastr) {
+        window.toastr.error(`Server Error: ${msg}`);
+    } else {
+        alert(`Error Code: ${msg}`);
+    }
+};
+
 var btnSubmitPost = '#btn-save';
 var onPostCreateEditBegin = function () {
     $(btnSubmitPost).text('Saving...');
@@ -400,6 +431,15 @@ var onPageCreateEditSuccess = function (data) {
     if (data.pageId) {
         $('input[name="Id"]').val(data.pageId);
         toastr.success('Page saved successfully.');
+
+        if ($('input[name="IsPublished"]:checked').val() === 'true') {
+            $('#btn-preview').hide();
+        }
+
+        if (isPreviewRequired) {
+            isPreviewRequired = false;
+            window.open(`/page/preview/${data.pageId}`);
+        }
     }
 };
 

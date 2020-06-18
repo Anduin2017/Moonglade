@@ -17,6 +17,11 @@ namespace Moonglade.Web.Models.Settings
         [MaxLength(1024)]
         public string MetaDescription { get; set; }
 
+        [Display(Name = "Canonical URL Prefix")]
+        [DataType(DataType.Url)]
+        [MaxLength(64)]
+        public string CanonicalPrefix { get; set; }
+
         [Required]
         [Display(Name = "Logo Text")]
         [MaxLength(16)]
@@ -34,18 +39,18 @@ namespace Moonglade.Web.Models.Settings
         public string SiteTitle { get; set; }
 
         [Required]
-        [Display(Name = "Blogger Name")]
+        [Display(Name = "Your Name")]
         [MaxLength(32)]
         public string OwnerName { get; set; }
 
         [Required]
-        [Display(Name = "Blogger Description")]
+        [Display(Name = "Your Description")]
         [DataType(DataType.MultilineText)]
         [MaxLength(256)]
         public string OwnerDescription { get; set; }
 
         [Required]
-        [Display(Name = "Blogger Short Description")]
+        [Display(Name = "Short Description")]
         [MaxLength(32)]
         public string OwnerShortDescription { get; set; }
 

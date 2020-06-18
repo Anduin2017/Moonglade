@@ -1,41 +1,36 @@
 ﻿#region Usings
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 using AspNetCoreRateLimit;
 using Edi.Captcha;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Rewrite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moonglade.Auditing;
-using Moonglade.Configuration;
-using Moonglade.Configuration.Abstraction;
 using Moonglade.Core;
 using Moonglade.Core.Notification;
-using Moonglade.Data;
-using Moonglade.Data.Infrastructure;
 using Moonglade.DataPorting;
-using Moonglade.DateTimeOps;
-using Moonglade.HtmlEncoding;
-using Moonglade.ImageStorage;
 using Moonglade.Model;
 using Moonglade.Model.Settings;
 using Moonglade.OpmlFileWriter;
-using Moonglade.Pingback;
-using Moonglade.Setup;
 using Moonglade.Web.Authentication;
 using Moonglade.Web.Extensions;
 using Moonglade.Web.Filters;
-using Moonglade.Web.Middleware.DNT;
-using Moonglade.Web.Middleware.PoweredBy;
-using Moonglade.Web.Middleware.RobotsTxt;
+using Moonglade.Web.Middleware;
 using Moonglade.Web.SiteIconGenerator;
 using Polly;
 using System;
@@ -50,32 +45,24 @@ namespace Moonglade.Web
     public class Startup
     {
         private ILogger<Startup> _logger;
-        private readonly IConfigurationSection _appSettingsSection;
+        private readonly IConfigurationSection _appSettings;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _environment;
+        private readonly IList<CultureInfo> _supportedCultures;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             _configuration = configuration;
             _environment = env;
-            _appSettingsSection = _configuration.GetSection(nameof(AppSettings));
+            _appSettings = _configuration.GetSection(nameof(AppSettings));
+            _supportedCultures = new[] { "en-US", "zh-CN" }.Select(p => new CultureInfo(p)).ToList();
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOptions();
+            services.AddBlogConfiguration(_appSettings);
             services.AddMemoryCache();
             services.AddRateLimit(_configuration.GetSection("IpRateLimiting"));
-
-            services.Configure<AppSettings>(_appSettingsSection);
-
-            var authentication = new AuthenticationSettings();
-            _configuration.Bind(nameof(Authentication), authentication);
-            services.Configure<AuthenticationSettings>(_configuration.GetSection(nameof(Authentication)));
-
-            var imageStorage = new ImageStorageSettings();
-            _configuration.Bind(nameof(ImageStorage), imageStorage);
-            services.Configure<ImageStorageSettings>(_configuration.GetSection(nameof(ImageStorage)));
 
             services.AddSession(options =>
             {
@@ -83,9 +70,25 @@ namespace Moonglade.Web
                 options.Cookie.HttpOnly = true;
             });
 
+<<<<<<< HEAD
             services.AddMoongladeAuthenticaton(authentication);
+=======
+            services.AddApplicationInsightsTelemetry();
+            services.AddMoongladeAuthenticaton(_configuration);
+
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
+>>>>>>> f07ed52707c981647a88ec84bc5fe9d306c21066
             services.AddMvc(options =>
-                            options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
+                            options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()))
+                    .AddViewLocalization()
+                    .AddDataAnnotationsLocalization();
+
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                options.DefaultRequestCulture = new RequestCulture("en-US");
+                options.SupportedCultures = _supportedCultures;
+                options.SupportedUICultures = _supportedCultures;
+            });
 
             services.AddAntiforgery(options =>
             {
@@ -94,22 +97,15 @@ namespace Moonglade.Web
                 options.FormFieldName = $"{cookieBaseName}-FORM";
             });
 
-            services.AddMoongladeImageStorage(imageStorage, _environment.ContentRootPath);
-            services.AddScoped(typeof(IRepository<>), typeof(DbContextRepository<>));
+            services.AddPingback();
+            services.AddImageStorage(_configuration, _environment);
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            services.AddSingleton<IBlogConfig, BlogConfig>();
             services.AddScoped<IMoongladeAudit, MoongladeAudit>();
             services.AddScoped<DeleteSubscriptionCache>();
-            services.AddScoped<IHtmlCodec, HtmlCodec>();
             services.AddScoped<ISiteIconGenerator, FileSystemSiteIconGenerator>();
-            services.AddScoped<IDateTimeResolver>(c =>
-                new DateTimeResolver(c.GetService<IBlogConfig>().GeneralSettings.TimeZoneUtcOffset));
 
             services.AddScoped<IExportManager, ExportManager>();
-            services.AddScoped<IPingbackSender, PingbackSender>();
-            services.AddScoped<IPingbackReceiver, PingbackReceiver>();
             services.AddScoped<IFileSystemOpmlWriter, FileSystemOpmlWriter>();
-            services.AddScoped<IFileNameGenerator>(gen => new GuidFileNameGenerator(Guid.NewGuid()));
             services.AddSessionBasedCaptcha();
 
             var asm = Assembly.GetAssembly(typeof(MoongladeService));
@@ -131,15 +127,7 @@ namespace Moonglade.Web
                                     _logger?.LogWarning($"Request failed with {result.Result.StatusCode}. Waiting {span} before next retry. Retry attempt {retryCount}/3.");
                                 }));
 
-            services.AddDbContext<MoongladeDbContext>(options =>
-                    options.UseLazyLoadingProxies()
-                           .UseSqlServer(_configuration.GetConnectionString(Constants.DbConnectionName), sqlOptions =>
-                               {
-                                   sqlOptions.EnableRetryOnFailure(
-                                       3,
-                                       TimeSpan.FromSeconds(30),
-                                       null);
-                               }));
+            services.AddDataStorage(_configuration.GetConnectionString(Constants.DbConnectionName));
         }
 
         public void Configure(
@@ -148,8 +136,8 @@ namespace Moonglade.Web
             IHostApplicationLifetime appLifetime)
         {
             _logger = logger;
-            var enforceHttps = bool.Parse(_appSettingsSection["EnforceHttps"]);
-            var allowExtScripts = bool.Parse(_appSettingsSection["AllowExternalScripts"]);
+            var enforceHttps = bool.Parse(_appSettings["EnforceHttps"]);
+            var allowExtScripts = bool.Parse(_appSettings["AllowExternalScripts"]);
 
             // Support Chinese contents
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -172,7 +160,6 @@ namespace Moonglade.Web
                 _logger.LogInformation("Moonglade stopped.");
             });
 
-
             app.UseSecurityHeaders(new HeaderPolicyCollection()
                 .AddFrameOptionsSameOrigin()
                 .AddXssProtectionEnabled()
@@ -183,8 +170,7 @@ namespace Moonglade.Web
                     {
                         csp.AddUpgradeInsecureRequests();
                     }
-                    csp.AddFormAction()
-                        .Self();
+                    csp.AddFormAction().Self();
 
                     if (!allowExtScripts)
                     {
@@ -196,14 +182,13 @@ namespace Moonglade.Web
                             .From("https://*.aiursoft.com");
                     }
                 })
-                // Microsoft believes privacy is a fundamental human right
-                // So should I
                 .AddFeaturePolicy(builder =>
                 {
                     builder.AddCamera().None();
                     builder.AddMicrophone().None();
                     builder.AddPayment().None();
                     builder.AddUsb().None();
+                    builder.AddAccelerometer().None();
                 })
                 .RemoveServerHeader()
             );
@@ -213,6 +198,7 @@ namespace Moonglade.Web
             TryUseUrlRewrite(app);
             app.UseMiddleware<PoweredByMiddleware>();
             app.UseMiddleware<DNTMiddleware>();
+            app.UseMiddleware<FirstRunMiddleware>();
 
             if (_environment.IsDevelopment())
             {
@@ -233,68 +219,35 @@ namespace Moonglade.Web
                 app.UseHsts();
             }
 
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("en-US"),
+                SupportedCultures = _supportedCultures,
+                SupportedUICultures = _supportedCultures
+            });
+
             app.UseStaticFiles();
             app.UseSession();
 
-            var conn = _configuration.GetConnectionString(Constants.DbConnectionName);
-            var setupHelper = new SetupHelper(conn);
+            app.UseIpRateLimiting();
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-            if (!setupHelper.TestDatabaseConnection(exception =>
+            app.UseEndpoints(endpoints =>
             {
-                _logger.LogCritical(exception, $"Error {nameof(SetupHelper.TestDatabaseConnection)}, connection string: {conn}");
-            }))
-            {
-                app.Run(async context =>
+                endpoints.MapGet("/ping", async context =>
                 {
-                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                    await context.Response.WriteAsync("Database connection failed. Please see error log. Application has been stopped.");
-                    appLifetime.StopApplication();
+                    context.Response.Headers.Add("X-Moonglade-Version", Utils.AppVersion);
+                    await context.Response.WriteAsync(
+                        $"Moonglade Version: {Utils.AppVersion}, .NET Core {Environment.Version}", Encoding.UTF8);
                 });
-            }
-            else
-            {
-                if (setupHelper.IsFirstRun())
-                {
-                    try
-                    {
-                        _logger.LogInformation("Initializing first run configuration...");
-                        setupHelper.InitFirstRun();
-                        _logger.LogInformation("Database setup successfully.");
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogCritical(e, e.Message);
-                        app.Run(async context =>
-                        {
-                            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                            await context.Response.WriteAsync("Error initializing first run, please check error log.");
-                            appLifetime.StopApplication();
-                        });
-                    }
-                }
-
-                app.UseIpRateLimiting();
-                app.UseRouting();
-                app.UseAuthentication();
-                app.UseAuthorization();
-
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapGet("/ping", async context =>
-                    {
-                        context.Response.Headers.Add("X-Moonglade-Version", Utils.AppVersion);
-                        await context.Response.WriteAsync(
-                            $"Moonglade Version: {Utils.AppVersion}, .NET Core {Environment.Version}", Encoding.UTF8);
-                    });
-                    endpoints.MapControllerRoute(
-                        "default",
-                        "{controller=Home}/{action=Index}/{id?}");
-                    endpoints.MapRazorPages();
-                });
-            }
+                endpoints.MapControllerRoute(
+                    "default",
+                    "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+            });
         }
-
-        #region Private Helpers
 
         private void TryUseUrlRewrite(IApplicationBuilder app)
         {
@@ -311,7 +264,5 @@ namespace Moonglade.Web
                 _logger.LogError(e, nameof(TryUseUrlRewrite));
             }
         }
-
-        #endregion
     }
 }

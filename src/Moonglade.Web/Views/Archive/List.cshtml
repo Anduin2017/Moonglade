@@ -12,7 +12,7 @@
     @if (!Model.Any())
     {
         <div class="alert alert-warning">
-            No Posts
+            @Localizer["No Posts"]
         </div>
     }
     else
@@ -25,3 +25,5 @@
         }
     }
 </div>
+
+<partial name="_LightSwitch" />

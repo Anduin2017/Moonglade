@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Moonglade.Auditing;
 using Moonglade.Data.Entities;
 using Moonglade.Data.Infrastructure;
-using Moonglade.HtmlEncoding;
 using Moonglade.Model;
 using Moonglade.Model.Settings;
 using System;
@@ -15,7 +14,6 @@ namespace Moonglade.Core
 {
     public class CustomPageService : MoongladeService
     {
-        private readonly IHtmlCodec _htmlCodec;
         private readonly IRepository<CustomPageEntity> _customPageRepository;
         private readonly IMoongladeAudit _moongladeAudit;
 
@@ -23,15 +21,13 @@ namespace Moonglade.Core
             ILogger<CustomPageService> logger,
             IOptions<AppSettings> settings,
             IRepository<CustomPageEntity> customPageRepository,
-            IHtmlCodec htmlCodec,
             IMoongladeAudit moongladeAudit) : base(logger, settings)
         {
             _customPageRepository = customPageRepository;
-            _htmlCodec = htmlCodec;
             _moongladeAudit = moongladeAudit;
         }
 
-        public Task<Response<CustomPage>> GetPageAsync(Guid pageId)
+        public Task<Response<CustomPage>> GetAsync(Guid pageId)
         {
             return TryExecuteAsync<CustomPage>(async () =>
             {
@@ -41,39 +37,39 @@ namespace Moonglade.Core
             });
         }
 
-        public Task<Response<CustomPage>> GetPageAsync(string routeName)
+        public Task<Response<CustomPage>> GetAsync(string slug)
         {
             return TryExecuteAsync<CustomPage>(async () =>
             {
-                if (string.IsNullOrWhiteSpace(routeName))
+                if (string.IsNullOrWhiteSpace(slug))
                 {
-                    throw new ArgumentNullException(nameof(routeName));
+                    throw new ArgumentNullException(nameof(slug));
                 }
 
-                var loweredRouteName = routeName.ToLower();
-                var entity = await _customPageRepository.GetAsync(p => p.RouteName == loweredRouteName);
+                var loweredRouteName = slug.ToLower();
+                var entity = await _customPageRepository.GetAsync(p => p.Slug == loweredRouteName);
                 var item = EntityToCustomPage(entity);
                 return new SuccessResponse<CustomPage>(item);
             });
         }
 
-        public Task<Response<IReadOnlyList<CustomPageMetaData>>> GetPagesMetaAsync()
+        public Task<Response<IReadOnlyList<CustomPageSegment>>> ListSegmentAsync()
         {
-            return TryExecuteAsync<IReadOnlyList<CustomPageMetaData>>(async () =>
+            return TryExecuteAsync<IReadOnlyList<CustomPageSegment>>(async () =>
             {
-                var list = await _customPageRepository.SelectAsync(page => new CustomPageMetaData
+                var list = await _customPageRepository.SelectAsync(page => new CustomPageSegment
                 {
                     Id = page.Id,
                     CreateOnUtc = page.CreateOnUtc,
-                    RouteName = page.RouteName,
+                    RouteName = page.Slug,
                     Title = page.Title
                 });
 
-                return new SuccessResponse<IReadOnlyList<CustomPageMetaData>>(list);
+                return new SuccessResponse<IReadOnlyList<CustomPageSegment>>(list);
             });
         }
 
-        public Task<Response<Guid>> CreatePageAsync(CreateCustomPageRequest request)
+        public Task<Response<Guid>> CreateAsync(CreateCustomPageRequest request)
         {
             return TryExecuteAsync<Guid>(async () =>
             {
@@ -82,11 +78,13 @@ namespace Moonglade.Core
                 {
                     Id = uid,
                     Title = request.Title.Trim(),
-                    RouteName = request.RouteName.ToLower().Trim(),
+                    Slug = request.Slug.ToLower().Trim(),
+                    MetaDescription = request.MetaDescription,
                     CreateOnUtc = DateTime.UtcNow,
-                    HtmlContent = _htmlCodec.HtmlEncode(request.HtmlContent),
+                    HtmlContent = request.HtmlContent,
                     CssContent = request.CssContent,
-                    HideSidebar = request.HideSidebar
+                    HideSidebar = request.HideSidebar,
+                    IsPublished = request.IsPublished
                 };
 
                 await _customPageRepository.AddAsync(customPage);
@@ -96,7 +94,7 @@ namespace Moonglade.Core
             });
         }
 
-        public Task<Response<Guid>> EditPageAsync(EditCustomPageRequest request)
+        public Task<Response<Guid>> UpdateAsync(EditCustomPageRequest request)
         {
             return TryExecuteAsync<Guid>(async () =>
             {
@@ -107,11 +105,13 @@ namespace Moonglade.Core
                 }
 
                 page.Title = request.Title.Trim();
-                page.RouteName = request.RouteName.ToLower().Trim();
-                page.HtmlContent = _htmlCodec.HtmlEncode(request.HtmlContent);
+                page.Slug = request.Slug.ToLower().Trim();
+                page.MetaDescription = request.MetaDescription;
+                page.HtmlContent = request.HtmlContent;
                 page.CssContent = request.CssContent;
                 page.HideSidebar = request.HideSidebar;
                 page.UpdatedOnUtc = DateTime.UtcNow;
+                page.IsPublished = request.IsPublished;
 
                 await _customPageRepository.UpdateAsync(page);
                 await _moongladeAudit.AddAuditEntry(EventType.Content, AuditEventId.PageUpdated, $"Page '{request.Id}' updated.");
@@ -120,7 +120,7 @@ namespace Moonglade.Core
             });
         }
 
-        public Task<Response> DeletePageAsync(Guid pageId)
+        public Task<Response> DeleteAsync(Guid pageId)
         {
             return TryExecuteAsync(async () =>
             {
@@ -137,7 +137,7 @@ namespace Moonglade.Core
             });
         }
 
-        private CustomPage EntityToCustomPage(CustomPageEntity entity)
+        private static CustomPage EntityToCustomPage(CustomPageEntity entity)
         {
             if (null == entity)
             {
@@ -150,10 +150,12 @@ namespace Moonglade.Core
                 Title = entity.Title.Trim(),
                 CreateOnUtc = entity.CreateOnUtc,
                 CssContent = entity.CssContent,
-                RawHtmlContent = _htmlCodec.HtmlDecode(entity.HtmlContent),
+                RawHtmlContent = entity.HtmlContent,
                 HideSidebar = entity.HideSidebar,
-                RouteName = entity.RouteName.Trim().ToLower(),
-                UpdatedOnUtc = entity.UpdatedOnUtc
+                Slug = entity.Slug.Trim().ToLower(),
+                MetaDescription = entity.MetaDescription?.Trim(),
+                UpdatedOnUtc = entity.UpdatedOnUtc,
+                IsPublished = entity.IsPublished
             };
         }
     }

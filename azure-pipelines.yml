@@ -11,17 +11,17 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   steps:
-  - task: UseDotNet@2
-    inputs:
-      packageType: 'sdk'
-      version: '3.1.x'
+  # - task: UseDotNet@2
+  #   inputs:
+  #     packageType: 'sdk'
+  #     version: '3.1.x'
 
   - task: DotNetCoreCLI@2
     displayName: Build
     inputs:
       command: build
       projects: '**/*.sln'
-      arguments: '--configuration Release -p:Version=10.3.$(Build.BuildId)-official'
+      arguments: '--configuration Release -p:Version=10.5.$(Build.BuildId)-official'
 
   - task: DotNetCoreCLI@2
     displayName: Test
@@ -34,7 +34,7 @@ jobs:
     inputs:
       command: publish
       publishWebProjects: True
-      arguments: '--configuration Release -p:Version=10.3.$(Build.BuildId)-official --output $(Build.ArtifactStagingDirectory)'
+      arguments: '--configuration Release -p:Version=10.5.$(Build.BuildId)-official --output $(Build.ArtifactStagingDirectory)'
       zipAfterPublish: True
 
   - task: PublishBuildArtifacts@1

@@ -63,13 +63,13 @@ namespace Moonglade.Web.Controllers
                     }
 
                     var commentPostModel = model.NewCommentViewModel;
-                    var response = await _commentService.AddCommentAsync(new NewCommentRequest(commentPostModel.PostId)
+                    var response = await _commentService.CreateAsync(new NewCommentRequest(commentPostModel.PostId)
                     {
                         Username = commentPostModel.Username,
                         Content = commentPostModel.Content,
                         Email = commentPostModel.Email,
                         IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
-                        UserAgent = GetUserAgent()
+                        UserAgent = UserAgent
                     });
 
                     if (response.IsSuccess)
@@ -148,7 +148,7 @@ namespace Moonglade.Web.Controllers
         [HttpPost("delete")]
         public async Task<IActionResult> Delete(Guid commentId)
         {
-            var response = await _commentService.DeleteCommentsAsync(new[] { commentId });
+            var response = await _commentService.DeleteAsync(new[] { commentId });
             Logger.LogInformation($"User '{User.Identity.Name}' deleting comment id '{commentId}'");
 
             return response.IsSuccess ? Json(commentId) : Json(false);
@@ -162,7 +162,7 @@ namespace Moonglade.Web.Controllers
                 commentId,
                 replyContent,
                 HttpContext.Connection.RemoteIpAddress.ToString(),
-                GetUserAgent());
+                UserAgent);
 
             if (!response.IsSuccess)
             {

@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 using System.Xml;
 
 namespace Moonglade.Pingback
@@ -140,8 +139,6 @@ namespace Moonglade.Pingback
             {
                 throw new ArgumentNullException(content);
             }
-
-            content = HttpUtility.HtmlDecode(content);
 
             var urlsList = new List<Uri>();
             foreach (var url in

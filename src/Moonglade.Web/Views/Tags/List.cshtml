@@ -1,5 +1,4 @@
 ﻿@model IReadOnlyList<Moonglade.Model.PostListItem>
-
 @if (null != ViewBag.IsServerError && ViewBag.IsServerError)
 {
     <partial name="_ServerErrorMessage" />
@@ -13,7 +12,7 @@ else
     @if (!Model.Any())
     {
         <div class="alert alert-warning">
-            No Posts
+            @Localizer["No Posts"]
         </div>
     }
     else
@@ -26,3 +25,5 @@ else
         }
     }
 }
+
+<partial name="_LightSwitch" />

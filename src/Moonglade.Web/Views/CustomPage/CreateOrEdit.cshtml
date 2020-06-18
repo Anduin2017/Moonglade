@@ -15,7 +15,7 @@
     <script src="~/lib/monaco-editor/min/vs/loader.js"></script>
     <script>
         $("#Title").change(function () {
-            $("#RouteName").val(slugify($(this).val()));
+            $("#Slug").val(slugify($(this).val()));
         });
 
         var htmlContentEditor = null;
@@ -69,6 +69,15 @@
             if (!$(".page-edit-form").valid()) {
                 e.preventDefault();
             }
+            isPreviewRequired = false;
+        });
+
+        $('#btn-preview').click(function (e) {
+            assignEditorValues();
+            if (!$(".page-edit-form").valid()) {
+                e.preventDefault();
+            }
+            isPreviewRequired = true;
         });
 
         $(function () {
@@ -96,7 +105,7 @@
     </style>
 }
 
-<form class="page-edit-form" method="post" asp-action="CreateOrEdit" 
+<form class="page-edit-form" method="post" asp-action="CreateOrEdit"
       data-ajax-begin="onPageCreateEditBegin"
       data-ajax-complete="onPageCreateEditComplete"
       data-ajax-failure="onPageCreateEditFailed"
@@ -118,10 +127,16 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text" id="basic-addon3">page/</span>
                 </div>
-                <input type="text" asp-for="RouteName" class="form-control form-control-sm" placeholder="route-name" />
+                <input type="text" asp-for="Slug" class="form-control form-control-sm" placeholder="slug" />
             </div>
             <div>
-                <span asp-validation-for="RouteName" class="text-danger"></span>
+                <span asp-validation-for="Slug" class="text-danger"></span>
+            </div>
+
+            <div class="mt-2">
+                <label asp-for="MetaDescription" class="control-label"></label>
+                <textarea asp-for="MetaDescription" class="form-control"></textarea>
+                <span asp-validation-for="MetaDescription" class="text-danger"></span>
             </div>
 
             <div>
@@ -168,6 +183,14 @@
                             <input name="HideSidebar" type="hidden" value="false">
                         </div>
                     </li>
+                    <li class="list-group-item">
+                        <label asp-for="IsPublished" class="control-label"></label>
+                        <div class="material-switch float-right">
+                            <input @(Model.IsPublished ? "checked=\" checked\"" : "") id="IsPublished" name="IsPublished" type="checkbox" value="true">
+                            <label for="IsPublished" class="label-success"></label>
+                            <input name="IsPublished" type="hidden" value="false">
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -177,8 +200,12 @@
 
     <div>
         <button type="submit" class="btn btn-success" id="btn-submit">
-            Save
+            @Localizer["Save"]
         </button>
-        <a asp-controller="CustomPage" asp-action="Manage" class="btn btn-light">Cancel</a>
+        @if (!Model.IsPublished)
+        {
+            <button class="btn btn-outline-primary" id="btn-preview">@Localizer["Preview"]</button>
+        }
+        <a asp-controller="CustomPage" asp-action="Manage" class="btn btn-light">@Localizer["Cancel"]</a>
     </div>
 </form>

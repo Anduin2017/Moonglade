@@ -3,14 +3,14 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "jquery@3.4.1",
+      "library": "jquery@3.5.1",
       "destination": "wwwroot/lib/jquery",
       "files": [
         "jquery.min.js"
       ]
     },
     {
-      "library": "tinymce@5.2.2",
+      "library": "tinymce@5.3.1",
       "destination": "wwwroot/lib/tinymce",
       "files": []
     },
@@ -63,7 +63,7 @@
     },
     {
       "provider": "unpkg",
-      "library": "bootstrap@4.4.1",
+      "library": "bootstrap@4.5.0",
       "destination": "wwwroot/lib/bootstrap/",
       "files": [
         "dist/css/bootstrap.min.css",
@@ -76,14 +76,6 @@
       "destination": "wwwroot/lib/inline-attachment/",
       "files": [
         "src/inline-attachment.js"
-      ]
-    },
-    {
-      "provider": "unpkg",
-      "library": "normalize.css@8.0.1",
-      "destination": "wwwroot/lib/normalize.css/",
-      "files": [
-        "normalize.css"
       ]
     },
     {

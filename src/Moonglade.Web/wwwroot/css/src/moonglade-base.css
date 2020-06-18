@@ -450,7 +450,7 @@ label {
         .timeline > li > .timeline-panel {
             -webkit-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
             border: 1px solid #d4d4d4;
-            border-radius: 2px;
+            border-radius: 4px;
             box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
             float: left;
             padding: 20px;
@@ -959,4 +959,8 @@ body {
 #lighticon {
     display: block;
     transform: translate(0, 50%);
+}
+
+#extlink-url {
+    color: var(--moonglade-accent-color1);
 }

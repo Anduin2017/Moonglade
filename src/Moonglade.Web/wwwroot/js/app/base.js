@@ -2,13 +2,16 @@
     "positionClass": 'toast-bottom-center'
 };
 
+var isDarkMode = false;
+var supportLightSwitch = false;
+
 $(function () {
     $('[data-toggle="popover"]').popover();
     $('[data-toggle="tooltip"]').tooltip();
 
     $('.site-qrcode').qrcode(document.location.origin);
 
-    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    if (/Android|webOS|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         $('div.container').addClass('container-fluid').removeClass('container');
     }
 
@@ -19,6 +22,14 @@ $(function () {
         .blur(function () {
             $(this).attr('placeholder', 'Search');
         });
+
+    $('.lightswitch').click(function () {
+        if (isDarkMode) {
+            themeModeSwitcher.useLightMode();
+        } else {
+            themeModeSwitcher.useDarkMode();
+        }
+    });
 });
 
 /**

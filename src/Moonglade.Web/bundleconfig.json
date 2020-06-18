@@ -18,7 +18,8 @@
       "wwwroot/js/app/base.js",
       "wwwroot/js/app/postslug.js",
       "wwwroot/js/app/csrf.js",
-      "wwwroot/js/app/comments.js"
+      "wwwroot/js/app/comments.js",
+      "wwwroot/js/app/darklighttheme.js"
     ]
   },
   {
@@ -28,6 +29,7 @@
       "wwwroot/css/src/fonts.css",
       "wwwroot/css/src/moonglade-base.css",
       "wwwroot/css/src/moonglade-rwd.css",
+      "wwwroot/css/src/darkmode.css",
       "wwwroot/css/src/admin.css",
       "wwwroot/css/src/highlighter-custom.css",
       "wwwroot/lib/toastr.js/toastr.min.css"
@@ -36,7 +38,6 @@
   {
     "outputFileName": "wwwroot/css/errorpages-bundle.css",
     "inputFiles": [
-      "wwwroot/lib/normalize.css/normalize.css",
       "wwwroot/css/src/errorpages.css"
     ]
   },

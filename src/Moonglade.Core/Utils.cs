@@ -17,7 +17,7 @@ namespace Moonglade.Core
     public static class Utils
     {
         public static string AppVersion =>
-            Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
         public static async Task<string> GetThemeColorAsync(string webRootPath, string currentTheme)
         {
@@ -40,6 +40,25 @@ namespace Moonglade.Core
             }
 
             return "#FFFFFF";
+        }
+
+        public static string ResolveCanonicalUrl(string prefix, string path)
+        {
+            if (string.IsNullOrWhiteSpace(prefix))
+            {
+                return string.Empty;
+            }
+            path ??= string.Empty;
+
+            if (!prefix.IsValidUrl())
+            {
+                throw new UriFormatException($"Prefix '{prefix}' is not a valid URL.");
+            }
+
+            var prefixUri = new Uri(prefix);
+            return Uri.TryCreate(baseUri: prefixUri, relativeUri: path, out var newUri) ?
+                newUri.ToString() :
+                string.Empty;
         }
 
         public static string SterilizeMenuLink(string rawUrl)
@@ -66,7 +85,7 @@ namespace Moonglade.Core
 
                 return false;
             }
-            
+
             string invalidReturn = "#";
             if (string.IsNullOrWhiteSpace(rawUrl))
             {
@@ -77,7 +96,7 @@ namespace Moonglade.Core
             {
                 return IsUnderLocalSlash() ? rawUrl : invalidReturn;
             }
-            
+
             var uri = new Uri(rawUrl);
             if (uri.IsLoopback)
             {
@@ -442,7 +461,9 @@ namespace Moonglade.Core
 
         public static string ConvertMarkdownContent(string markdown, MarkdownConvertType type, bool disableHtml = true)
         {
-            var pipeline = GetMoongladeMarkdownPipelineBuilder();
+            var pipeline = new MarkdownPipelineBuilder()
+                .UsePipeTables()
+                .UseBootstrap();
 
             if (disableHtml)
             {
@@ -465,15 +486,6 @@ namespace Moonglade.Core
             None = 0,
             Html = 1,
             Text = 2
-        }
-
-        private static MarkdownPipelineBuilder GetMoongladeMarkdownPipelineBuilder()
-        {
-            var pipeline = new MarkdownPipelineBuilder()
-                .UsePipeTables()
-                .UseBootstrap();
-
-            return pipeline;
         }
 
         public static Response<(string Slug, DateTime PubDate)> GetSlugInfoFromPostUrl(string url)
