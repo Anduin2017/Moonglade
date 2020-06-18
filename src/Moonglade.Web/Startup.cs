@@ -70,14 +70,9 @@ namespace Moonglade.Web
                 options.Cookie.HttpOnly = true;
             });
 
-<<<<<<< HEAD
-            services.AddMoongladeAuthenticaton(authentication);
-=======
-            services.AddApplicationInsightsTelemetry();
             services.AddMoongladeAuthenticaton(_configuration);
 
             services.AddLocalization(options => options.ResourcesPath = "Resources");
->>>>>>> f07ed52707c981647a88ec84bc5fe9d306c21066
             services.AddMvc(options =>
                             options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()))
                     .AddViewLocalization()
